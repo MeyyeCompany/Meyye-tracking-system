@@ -80,6 +80,47 @@
             margin-right: 12px;
         }
 
+        /* Backup Utilities Panel in Sidebar */
+        .backup-utilities {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            background-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .backup-utilities p {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .btn-backup-container {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-backup {
+            flex: 1;
+            background-color: rgba(255, 255, 255, 0.15);
+            color: var(--white);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px;
+            font-size: 11px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-backup:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
         /* Main Content Area */
         main {
             margin-left: 260px;
@@ -313,7 +354,6 @@
 </head>
 <body>
 
-    <!-- Sidebar Menu Navigation -->
     <aside>
         <div class="brand">Meyye Co. Ltd</div>
         <ul class="nav-links">
@@ -322,9 +362,17 @@
             <li onclick="switchView('salaries', this)"><span>👔</span> Salaries &amp; Payroll</li>
             <li onclick="switchView('logs', this)"><span>📝</span> System &amp; Visitor Logs</li>
         </ul>
+
+        <div class="backup-utilities">
+            <p>System Storage Tools</p>
+            <div class="btn-backup-container">
+                <button class="btn-backup" onclick="exportDataData()">📥 Backup</button>
+                <button class="btn-backup" onclick="importDataData()">📤 Restore</button>
+            </div>
+            <button class="btn-backup" style="background-color: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.3);" onclick="clearAllData()">⚠️ Clear All</button>
+        </div>
     </aside>
 
-    <!-- App Dashboard Context Container -->
     <main>
         <header>
             <div>
@@ -333,7 +381,6 @@
             </div>
         </header>
 
-        <!-- KPI Status Metric Counters -->
         <div class="metrics-grid">
             <div class="card">
                 <div class="card-title">Total Sales</div>
@@ -353,7 +400,6 @@
             </div>
         </div>
 
-        <!-- ================= VIEW: FINANCIALS ================= -->
         <div id="view-financials" class="view active">
             <div class="panel">
                 <div class="panel-header">
@@ -411,7 +457,6 @@
             </div>
         </div>
 
-        <!-- ================= VIEW: INVENTORY ================= -->
         <div id="view-inventory" class="view">
             <div class="panel">
                 <div class="panel-header">
@@ -470,7 +515,6 @@
             </div>
         </div>
 
-        <!-- ================= VIEW: SALARIES ================= -->
         <div id="view-salaries" class="view">
             <div class="panel">
                 <div class="panel-header">
@@ -515,14 +559,12 @@
             </div>
         </div>
 
-        <!-- ================= VIEW: LOGS ================= -->
         <div id="view-logs" class="view">
             <div class="sub-nav">
                 <button class="btn btn-toggle active" id="btn-toggle-activity" onclick="switchLogSubView('activity')">Activity Log</button>
                 <button class="btn btn-toggle" id="btn-toggle-visitors" onclick="switchLogSubView('visitors')">Visitor Control Log</button>
             </div>
 
-            <!-- Sub View: Activity Log System -->
             <div id="sub-view-activity">
                 <div class="panel">
                     <div class="panel-header">
@@ -567,7 +609,6 @@
                 </div>
             </div>
 
-            <!-- Sub View: Visitor Log System -->
             <div id="sub-view-visitors" style="display: none;">
                 <div class="panel">
                     <div class="panel-header">
@@ -614,16 +655,20 @@
         </div>
     </main>
 
-    <!-- App Execution Control Script Module Logical Core Engine Layer -->
     <script>
-        // --- Core Local Memory Key Value Collections Initialization State Layer ---
-        let dataState = {
+        // --- Core Local Memory Key Value Collections Initialization State Layer (Checks localStorage first) ---
+        let dataState = JSON.parse(localStorage.getItem('meyye_co_data')) || {
             financials: [],
             inventory: [],
             salaries: [],
             activityLogs: [],
             visitorLogs: []
         };
+
+        // Save state helper function to update browser memory partition
+        function saveToLocalStorage() {
+            localStorage.setItem('meyye_co_data', JSON.stringify(dataState));
+        }
 
         // UI View Switch Router Control Layer
         function switchView(viewId, element) {
@@ -758,6 +803,9 @@
                 `;
                 visTableBody.appendChild(tr);
             });
+
+            // Push State Updates out into browser non-volatile local storage area
+            saveToLocalStorage();
         }
 
         // --- Event Form Formulator Dispatcher Subsystems Core Hooks ---
@@ -838,9 +886,45 @@
                 narrative: `Disbursed contract payroll wage payment check line items directly to account system roster for worker ${employee.name}.`
             });
 
-            alert(`Payroll disbursement registered successfully!
-Processed ${formatCurrency(employee.amount)} for ${employee.name}.`);
+            alert(`Payroll disbursement registered successfully!\nProcessed ${formatCurrency(employee.amount)} for ${employee.name}.`);
             refreshDashboardEcosystem();
+        }
+
+        // --- Core Backup Data Handling Utilities ---
+        function exportDataData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataState, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `meyye_backup_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function importDataData() {
+            const jsonRaw = prompt("Paste your backup JSON text string contents here:");
+            if (jsonRaw) {
+                try {
+                    const parsed = JSON.parse(jsonRaw);
+                    if (parsed.financials && parsed.inventory && parsed.salaries) {
+                        dataState = parsed;
+                        refreshDashboardEcosystem();
+                        alert("Database configuration successfully restored!");
+                    } else {
+                        alert("Invalid backup data format patterns discovered.");
+                    }
+                } catch (e) {
+                    alert("Error parsing structural data map file contents.");
+                }
+            }
+        }
+
+        function clearAllData() {
+            if(confirm("CRITICAL WARNING:\nAre you sure you want to permanently delete ALL records from this browser's local memory storage? This cannot be undone unless you have a backup file saved.")) {
+                dataState = { financials: [], inventory: [], salaries: [], activityLogs: [], visitorLogs: [] };
+                refreshDashboardEcosystem();
+                alert("All application local data records dropped successfully.");
+            }
         }
 
         // Initialize Runtime Bootstrapper Pipeline Core
