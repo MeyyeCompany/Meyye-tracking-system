@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meyye Company Ltd - Integrated Management System</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f3f4f6;
+            --white: #ffffff;
+            --border: #e5e7eb;
+            --text-muted: #6b7280;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: var(--dark);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        aside {
+            width: 260px;
+            background-color: var(--primary);
+            color: var(--white);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            padding: 24px;
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-links {
+            list-style: none;
+            padding: 20px 0;
+            flex-grow: 1;
+        }
+
+        .nav-links li {
+            padding: 12px 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            font-weight: 500;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .nav-links li:hover, .nav-links li.active {
+            background-color: rgba(255,255,255,0.1);
+            color: var(--white);
+            border-left: 4px solid var(--secondary);
+        }
+
+        .nav-links li span {
+            margin-right: 12px;
+        }
+
+        /* Main Content Area */
+        main {
+            margin-left: 260px;
+            flex-grow: 1;
+            padding: 40px;
+            max-width: 1400px;
+        }
+
+        header {
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #0f172a;
+        }
+
+        .timestamp {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* Metric Dashboard Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: var(--white);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02);
+            border: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .card-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        .card-value.profit { color: var(--secondary); }
+        .card-value.expense { color: var(--danger); }
+
+        /* View Layouts */
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* Forms Layout & Controls */
+        .panel {
+            background: var(--white);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            background-color: #fafafa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            padding: 24px;
+            background-color: #fff;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--dark);
+        }
+
+        .form-group input, .form-group select {
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-light);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-light);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+
+        .btn-success {
+            background-color: var(--secondary);
+            color: var(--white);
+        }
+
+        .btn-success:hover {
+            background-color: #059669;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* Tables Data UI */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 14px 24px;
+            border-bottom: 1px solid var(--border);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 14px 24px;
+            border-bottom: 1px solid var(--border);
+            color: #334155;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        /* Badges & Tags */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-success { background-color: #d1fae5; color: #065f46; }
+        .badge-danger { background-color: #fee2e2; color: #991b1b; }
+        .badge-warning { background-color: #fef3c7; color: #92400e; }
+        .badge-info { background-color: #e0f2fe; color: #075985; }
+
+        /* Segmented control for switching inside logs view */
+        .sub-nav {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .btn-toggle {
+            background-color: #e2e8f0;
+            color: #475569;
+        }
+
+        .btn-toggle.active {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Menu Navigation -->
+    <aside>
+        <div class="brand">Meyye Co. Ltd</div>
+        <ul class="nav-links">
+            <li class="active" onclick="switchView('financials', this)"><span>💰</span> Financials</li>
+            <li onclick="switchView('inventory', this)"><span>📦</span> Inventory</li>
+            <li onclick="switchView('salaries', this)"><span>👔</span> Salaries &amp; Payroll</li>
+            <li onclick="switchView('logs', this)"><span>📝</span> System &amp; Visitor Logs</li>
+        </ul>
+    </aside>
+
+    <!-- App Dashboard Context Container -->
+    <main>
+        <header>
+            <div>
+                <h1 id="view-title">Financial Ledger</h1>
+                <p class="timestamp">Meyye Operations Ecosystem</p>
+            </div>
+        </header>
+
+        <!-- KPI Status Metric Counters -->
+        <div class="metrics-grid">
+            <div class="card">
+                <div class="card-title">Total Sales</div>
+                <div class="card-value profit" id="metric-sales">TZS 0</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Total Expenses</div>
+                <div class="card-value expense" id="metric-expenses">TZS 0</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Net Balance</div>
+                <div class="card-value" id="metric-net">TZS 0</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Low Stock Alert Items</div>
+                <div class="card-value" style="color: var(--warning);" id="metric-stock-alerts">0</div>
+            </div>
+        </div>
+
+        <!-- ================= VIEW: FINANCIALS ================= -->
+        <div id="view-financials" class="view active">
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Add Transaction Record</div>
+                </div>
+                <form id="form-financial" class="form-row" onsubmit="addTransaction(event)">
+                    <div class="form-group">
+                        <label>Transaction Type</label>
+                        <select id="fin-type" required>
+                            <option value="Sale">Sale (Income)</option>
+                            <option value="Expense">Expense (Outflow)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Business Division Focus</label>
+                        <select id="fin-category" required>
+                            <option value="Aquaculture">Aquaculture</option>
+                            <option value="Sunflower Oil">Sunflower Oil Refining</option>
+                            <option value="Poultry">Poultry Production</option>
+                            <option value="Overhead">General Administration / Overhead</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount (TZS)</label>
+                        <input type="number" id="fin-amount" placeholder="e.g. 150000" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Item Description Details</label>
+                        <input type="text" id="fin-desc" placeholder="e.g. Sold 50kg Sunflower Oil" required>
+                    </div>
+                    <div class="form-group" style="justify-content: flex-end;">
+                        <button type="submit" class="btn btn-primary">Save Ledger Entry</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Transaction Ledger History</div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Type</th>
+                                <th>Division Category</th>
+                                <th>Description</th>
+                                <th>Financial Value</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-financials"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= VIEW: INVENTORY ================= -->
+        <div id="view-inventory" class="view">
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Add Stock / Resource Allocation</div>
+                </div>
+                <form id="form-inventory" class="form-row" onsubmit="addInventory(event)">
+                    <div class="form-group">
+                        <label>Inventory Item Name</label>
+                        <input type="text" id="inv-name" placeholder="e.g. Fingerlings, Crude Oil" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Division Assignment</label>
+                        <select id="inv-category" required>
+                            <option value="Aquaculture">Aquaculture</option>
+                            <option value="Sunflower Oil">Sunflower Oil</option>
+                            <option value="Poultry">Poultry</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Current Stock Volume</label>
+                        <input type="number" id="inv-qty" placeholder="e.g. 450" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Unit of Measure</label>
+                        <input type="text" id="inv-unit" placeholder="e.g. Liters, Kgs, Units" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Minimum Threshold alert level</label>
+                        <input type="number" id="inv-min" placeholder="e.g. 50" min="0" required>
+                    </div>
+                    <div class="form-group" style="justify-content: flex-end;">
+                        <button type="submit" class="btn btn-primary">Register Stock Line</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Current Asset Stock Status Matrix</div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Asset Line Item</th>
+                                <th>Department Ecosystem</th>
+                                <th>Available Stock Qty</th>
+                                <th>Unit Metric</th>
+                                <th>Minimum Threshold Safe Guard</th>
+                                <th>Status Metric</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-inventory"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= VIEW: SALARIES ================= -->
+        <div id="view-salaries" class="view">
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Add / Register Employee Profile to System Roster</div>
+                </div>
+                <form id="form-salaries" class="form-row" onsubmit="addEmployee(event)">
+                    <div class="form-group">
+                        <label>Full Legal Name</label>
+                        <input type="text" id="sal-name" placeholder="e.g. Juma Kassim" required>
+                    </div>
+                    <div class="form-group">
+                        <label>System/Company Role</label>
+                        <input type="text" id="sal-role" placeholder="e.g. Refinery Supervisor" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Base Salary per Period (TZS)</label>
+                        <input type="number" id="sal-amount" placeholder="e.g. 650000" min="1" required>
+                    </div>
+                    <div class="form-group" style="justify-content: flex-end;">
+                        <button type="submit" class="btn btn-primary">Enroll Worker</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Personnel Wage Matrix & Roll Processing Dashboard</div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Worker Name</th>
+                                <th>Functional Operational Role</th>
+                                <th>Base Contract Salary Value</th>
+                                <th>Execution Tracking Controls</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-salaries"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= VIEW: LOGS ================= -->
+        <div id="view-logs" class="view">
+            <div class="sub-nav">
+                <button class="btn btn-toggle active" id="btn-toggle-activity" onclick="switchLogSubView('activity')">Activity Log</button>
+                <button class="btn btn-toggle" id="btn-toggle-visitors" onclick="switchLogSubView('visitors')">Visitor Control Log</button>
+            </div>
+
+            <!-- Sub View: Activity Log System -->
+            <div id="sub-view-activity">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Log Internal Infrastructure / Task Activity Execution</div>
+                    </div>
+                    <form id="form-activity" class="form-row" onsubmit="addActivityLog(event)">
+                        <div class="form-group">
+                            <label>Ecosystem Target Division</label>
+                            <select id="act-division" required>
+                                <option value="Aquaculture">Aquaculture Division</option>
+                                <option value="Sunflower Oil">Sunflower Oil Production</option>
+                                <option value="Poultry">Poultry Outposts</option>
+                                <option value="General Ops">General Operations Architecture</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>Execution Action Narrative Summary</label>
+                            <input type="text" id="act-narrative" placeholder="e.g. Water filtration system routine filter swap complete and verified" required>
+                        </div>
+                        <div class="form-group" style="justify-content: flex-end;">
+                            <button type="submit" class="btn btn-primary">Append Log Entry</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Historical Operational Audits Stream</div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Timestamp Line</th>
+                                    <th>Operational Division Segment</th>
+                                    <th>Narrative Audit Summary Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-activity-logs"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sub View: Visitor Log System -->
+            <div id="sub-view-visitors" style="display: none;">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Check-In Guest Arrival Registry Entry</div>
+                    </div>
+                    <form id="form-visitors" class="form-row" onsubmit="addVisitorLog(event)">
+                        <div class="form-group">
+                            <label>Visitor Legal Name / Representative Entity</label>
+                            <input type="text" id="vis-name" placeholder="e.g. Maria Mwangi (TBS Auditor)" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Purpose of Visit Engagement</label>
+                            <input type="text" id="vis-purpose" placeholder="e.g. Annual Quality Standards Verification Certification Audit" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Phone / Credential Details</label>
+                            <input type="text" id="vis-contact" placeholder="e.g. +255 712 345 678" required>
+                        </div>
+                        <div class="form-group" style="justify-content: flex-end;">
+                            <button type="submit" class="btn btn-success">Check-In Record Entry</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Visitor Registry Matrix Checkpoint Streams</div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Arrival Registry Timestamp</th>
+                                    <th>Guest Identity Profile Details</th>
+                                    <th>Purpose Engagement Summary Context</th>
+                                    <th>Contact Information Line</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-visitor-logs"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- App Execution Control Script Module Logical Core Engine Layer -->
+    <script>
+        // --- Core Local Memory Key Value Collections Initialization State Layer ---
+        let dataState = {
+            financials: [
+                { timestamp: '2026-06-12 09:15', type: 'Sale', category: 'Sunflower Oil', desc: 'Batch Alpha-04 200L oil delivery', amount: 950000 },
+                { timestamp: '2026-06-13 14:00', type: 'Expense', category: 'Aquaculture', desc: 'Premium fingerling structural feeding pellets supply replenishment', amount: 320000 },
+                { timestamp: '2026-06-14 11:30', type: 'Sale', category: 'Poultry', desc: 'Wholesale crate sales clearance lot 40 trays', amount: 480000 }
+            ],
+            inventory: [
+                { name: 'Crude Sunflower Seed Supply', category: 'Sunflower Oil', qty: 1200, unit: 'Kgs', min: 1500 },
+                { name: 'Tilapia Broodstock Fingerlings', category: 'Aquaculture', qty: 4500, unit: 'Units', min: 1000 },
+                { name: 'Broiler Starter Feed Rations', category: 'Poultry', qty: 850, unit: 'Kgs', min: 500 }
+            ],
+            salaries: [
+                { name: 'Hamisi Omari', role: 'Aquaculture Station Operations Engineer', amount: 750000 },
+                { name: 'Amina Juma', role: 'Quality Control Lead Refinery Lab Chemist', amount: 900000 }
+            ],
+            activityLogs: [
+                { timestamp: '2026-06-14 08:00', division: 'Aquaculture', narrative: 'Ponds dissolved oxygen profiling evaluation verification checks run clean.' }
+            ],
+            visitorLogs: [
+                { timestamp: '2026-06-14 10:15', name: 'Dr. Lucas Mwiba (TFDA Inspector)', purpose: 'Scheduled facility sanitation compliance audit checklist inspection', contact: '+255 754 889 112' }
+            ]
+        };
+
+        // UI View Switch Router Control Layer
+        function switchView(viewId, element) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-links li').forEach(l => l.classList.remove('active'));
+            
+            document.getElementById(`view-${viewId}`).classList.add('active');
+            element.classList.add('active');
+            
+            // Format Header Title Stream dynamically
+            const titles = { financials: 'Financial Ledger', inventory: 'Inventory Ledger Matrix', salaries: 'Personnel Salaries & Payroll System', logs: 'System Activity & Visitor Registries' };
+            document.getElementById('view-title').innerText = titles[viewId];
+        }
+
+        function switchLogSubView(subView) {
+            if(subView === 'activity') {
+                document.getElementById('sub-view-activity').style.display = 'block';
+                document.getElementById('sub-view-visitors').style.display = 'none';
+                document.getElementById('btn-toggle-activity').classList.add('active');
+                document.getElementById('btn-toggle-visitors').classList.remove('active');
+            } else {
+                document.getElementById('sub-view-activity').style.display = 'none';
+                document.getElementById('sub-view-visitors').style.display = 'block';
+                document.getElementById('btn-toggle-activity').classList.remove('active');
+                document.getElementById('btn-toggle-visitors').classList.add('active');
+            }
+        }
+
+        // Timestamp Utility String Generator Engine
+        function getFormattedTimestamp() {
+            const now = new Date();
+            return now.toISOString().replace('T', ' ').substring(0, 16);
+        }
+
+        // Number Currency Formatter Engine Component
+        function formatCurrency(amount) {
+            return 'TZS ' + parseInt(amount).toLocaleString();
+        }
+
+        // --- Core System Aggregator Engine Computation Render Pipeline Layer ---
+        function refreshDashboardEcosystem() {
+            // Render Financial Stream Engine Calculation Pipelines
+            let totalSales = 0;
+            let totalExpenses = 0;
+            const finTableBody = document.getElementById('table-financials');
+            finTableBody.innerHTML = '';
+
+            dataState.financials.forEach(item => {
+                if(item.type === 'Sale') totalSales += item.amount;
+                else totalExpenses += item.amount;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.timestamp}</td>
+                    <td><span class="badge ${item.type==='Sale'?'badge-success':'badge-danger'}">${item.type}</span></td>
+                    <td>${item.category}</td>
+                    <td>${item.desc}</td>
+                    <td style="font-weight:600; color:${item.type==='Sale'?'var(--secondary)':'var(--danger)'}">${item.type==='Sale'?'+':'-'} ${formatCurrency(item.amount)}</td>
+                `;
+                finTableBody.appendChild(tr);
+            });
+
+            // Update Financial Metric Dashboard Counters UI Card Display components
+            document.getElementById('metric-sales').innerText = formatCurrency(totalSales);
+            document.getElementById('metric-expenses').innerText = formatCurrency(totalExpenses);
+            const netBalance = totalSales - totalExpenses;
+            const netWidget = document.getElementById('metric-net');
+            netWidget.innerText = (netBalance >= 0 ? '+ ' : '') + formatCurrency(netBalance);
+            netWidget.className = 'card-value ' + (netBalance >= 0 ? 'profit' : 'expense');
+
+            // Render Inventory System Layout Matrices Pipeline
+            let stockAlertCounter = 0;
+            const invTableBody = document.getElementById('table-inventory');
+            invTableBody.innerHTML = '';
+
+            dataState.inventory.forEach(item => {
+                const isAlert = parseInt(item.qty) <= parseInt(item.min);
+                if(isAlert) stockAlertCounter++;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight:600;">${item.name}</td>
+                    <td>${item.category}</td>
+                    <td>${parseInt(item.qty).toLocaleString()}</td>
+                    <td>${item.unit}</td>
+                    <td>${parseInt(item.min).toLocaleString()}</td>
+                    <td><span class="badge ${isAlert?'badge-danger':'badge-success'}">${isAlert?'LOW STOCK ALERT':'SECURE'}</span></td>
+                `;
+                invTableBody.appendChild(tr);
+            });
+            document.getElementById('metric-stock-alerts').innerText = stockAlertCounter;
+
+            // Render Personnel Salaries Ledger Array Pipeline
+            const salTableBody = document.getElementById('table-salaries');
+            salTableBody.innerHTML = '';
+            dataState.salaries.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight:600;">${item.name}</td>
+                    <td>${item.role}</td>
+                    <td>${formatCurrency(item.amount)}</td>
+                    <td>
+                        <button class="btn btn-success btn-sm" onclick="disburseSalaryExpense(${index})">Disburse &amp; Log Payroll Outflow</button>
+                    </td>
+                `;
+                salTableBody.appendChild(tr);
+            });
+
+            // Render Core App Internal Process Activity Audits Log Stream Engine Pipeline
+            const actTableBody = document.getElementById('table-activity-logs');
+            actTableBody.innerHTML = '';
+            dataState.activityLogs.slice().reverse().forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.timestamp}</td>
+                    <td><span class="badge badge-info">${item.division}</span></td>
+                    <td>${item.narrative}</td>
+                `;
+                actTableBody.appendChild(tr);
+            });
+
+            // Render App External Traffic Visitors Registry Stream Engine Pipeline
+            const visTableBody = document.getElementById('table-visitor-logs');
+            visTableBody.innerHTML = '';
+            dataState.visitorLogs.slice().reverse().forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.timestamp}</td>
+                    <td style="font-weight:600;">${item.name}</td>
+                    <td>${item.purpose}</td>
+                    <td><code>${item.contact}</code></td>
+                `;
+                visTableBody.appendChild(tr);
+            });
+        }
+
+        // --- Event Form Formulator Dispatcher Subsystems Core Hooks ---
+        function addTransaction(e) {
+            e.preventDefault();
+            dataState.financials.push({
+                timestamp: getFormattedTimestamp(),
+                type: document.getElementById('fin-type').value,
+                category: document.getElementById('fin-category').value,
+                desc: document.getElementById('fin-desc').value,
+                amount: parseFloat(document.getElementById('fin-amount').value)
+            });
+            document.getElementById('form-financial').reset();
+            refreshDashboardEcosystem();
+        }
+
+        function addInventory(e) {
+            e.preventDefault();
+            dataState.inventory.push({
+                name: document.getElementById('inv-name').value,
+                category: document.getElementById('inv-category').value,
+                qty: parseFloat(document.getElementById('inv-qty').value),
+                unit: document.getElementById('inv-unit').value,
+                min: parseFloat(document.getElementById('inv-min').value)
+            });
+            document.getElementById('form-inventory').reset();
+            refreshDashboardEcosystem();
+        }
+
+        function addEmployee(e) {
+            e.preventDefault();
+            dataState.salaries.push({
+                name: document.getElementById('sal-name').value,
+                role: document.getElementById('sal-role').value,
+                amount: parseFloat(document.getElementById('sal-amount').value)
+            });
+            document.getElementById('form-salaries').reset();
+            refreshDashboardEcosystem();
+        }
+
+        function addActivityLog(e) {
+            e.preventDefault();
+            dataState.activityLogs.push({
+                timestamp: getFormattedTimestamp(),
+                division: document.getElementById('act-division').value,
+                narrative: document.getElementById('act-narrative').value
+            });
+            document.getElementById('form-activity').reset();
+            refreshDashboardEcosystem();
+        }
+
+        function addVisitorLog(e) {
+            e.preventDefault();
+            dataState.visitorLogs.push({
+                timestamp: getFormattedTimestamp(),
+                name: document.getElementById('vis-name').value,
+                purpose: document.getElementById('vis-purpose').value,
+                contact: document.getElementById('vis-contact').value
+            });
+            document.getElementById('form-visitors').reset();
+            refreshDashboardEcosystem();
+        }
+
+        // Interactive Matrix Action: Disburse Worker Salary and Bind to Financial Ledger Outflow System
+        function disburseSalaryExpense(index) {
+            const employee = dataState.salaries[index];
+            dataState.financials.push({
+                timestamp: getFormattedTimestamp(),
+                type: 'Expense',
+                category: 'Overhead',
+                desc: `Payroll salary distribution processing line item: ${employee.name} (${employee.role})`,
+                amount: employee.amount
+            });
+            
+            dataState.activityLogs.push({
+                timestamp: getFormattedTimestamp(),
+                division: 'General Ops',
+                narrative: `Disbursed contract payroll wage payment check line items directly to account system roster for worker ${employee.name}.`
+            });
+
+            alert(`Payroll disbursement registered successfully!
+Processed ${formatCurrency(employee.amount)} for ${employee.name}.`);
+            refreshDashboardEcosystem();
+        }
+
+        // Initialize Runtime Bootstrapper Pipeline Core
+        window.onload = function() {
+            refreshDashboardEcosystem();
+        };
+    </script>
+</body>
+</html>
